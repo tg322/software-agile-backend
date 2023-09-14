@@ -65,3 +65,13 @@ def runLogin():
             return jsonify({'message': 'failed'})
     else:
         return jsonify({'message': 'User not found'}), 404
+    
+
+@app.route('/verify-token', methods=['POST'])
+def runVerify():
+    data = request.get_json()
+    print(data['token'])
+    tokenIsActive = verify_token(data['token'])
+
+    return jsonify(tokenIsActive)
+        

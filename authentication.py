@@ -31,7 +31,7 @@ def decrypt_payload(payload):
 
     decrypted_payload_dict = json.loads(decrypted_payload)
 
-    print(decrypted_payload_dict)
+    return decrypted_payload_dict
 
 def encrypt_payload(payload):
 
@@ -69,3 +69,28 @@ def create_token(user_data):
     token = jwt.encode(new_payload, secret_key, algorithm='HS256')
     
     return token
+
+def decodeToken(token_str):
+    secret_key = 'your-secret-key'
+    decoded_jwt = jwt.decode(token_str, secret_key, algorithms=['HS256'])
+    jwe_payload = decoded_jwt.get('data', None)
+    
+    # If 'data' is not in the JWT, return False
+    if jwe_payload is None:
+        return False
+    return jwe_payload
+
+def verify_token(token_str):
+    
+    jwe_payload = decodeToken(token_str)
+    
+    # Decrypt the JWE payload
+    decrypted_payload = decrypt_payload(jwe_payload)
+    
+    # Extract the 'exp' timestamp and compare it to the current time
+    exp_timestamp = decrypted_payload.get('exp', None)
+    if exp_timestamp is None:
+        return False
+    
+    return datetime.datetime.utcnow().timestamp() > exp_timestamp
+

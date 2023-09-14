@@ -93,7 +93,7 @@ db = SQLAlchemy(app)
 
 # Import routes from other modules
 from userAccess import *
-
+from tickets import *
 from getCategory import *
 
 if __name__ == '__main__':
