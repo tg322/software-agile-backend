@@ -90,7 +90,7 @@ def verify_token(token_str):
     # Extract the 'exp' timestamp and compare it to the current time
     exp_timestamp = decrypted_payload.get('exp', None)
     if exp_timestamp is None:
-        return False
+        return True
     
     return datetime.datetime.utcnow().timestamp() > exp_timestamp
 
