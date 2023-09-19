@@ -72,6 +72,44 @@ def get_tickets():
     return jsonify({"error": "Invalid token"})
 
 
+@app.route('/getOpenTickets', methods=['POST'])
+def getOpenTickets():
+    from models import Tickets, ticket_category, users
+    data = request.get_json()
+
+    category_alias = aliased(ticket_category)
+    user_alias = aliased(users)
+
+    all_tickets = []
+
+    response = {}
+    if verify_token(data['token']):
+        all_tickets = db.session.query(Tickets, category_alias, user_alias)\
+        .join(category_alias, Tickets.ticket_category == category_alias.id)\
+        .join(user_alias, Tickets.ticket_from_id == user_alias.id).filter(Tickets.ticket_status == 'Open').all()
+        
+        serialized_data = [
+        {
+            'ticket_id': ticket.id,
+            'ticket_subject': ticket.ticket_subject,
+            'category': category.category,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'ticket_date': ticket.ticket_date_sent,
+            'ticket_status': ticket.ticket_status,
+        }
+        for ticket, category, user in all_tickets
+        ]
+
+        response = {'tickets': serialized_data}
+
+        print(response)
+
+        return jsonify(response)
+    
+    return jsonify({"error": "Invalid token"})
+
+
 
 @app.route('/getTicketById', methods=['POST'])
 def getTicketById():
@@ -109,4 +147,27 @@ def getTicketById():
 
         return jsonify({'ticket': serialized_data})
     
+    return jsonify({"error": "Invalid token"})
+
+@app.route('/deleteTicket', methods=['POST'])
+def deleteTicketByID():
+    from models import Tickets
+    data = request.get_json()
+
+    if verify_token(data['token']):
+        Tickets.query.filter(Tickets.id == data['id']).delete()
+        db.session.commit()
+        return jsonify({"Success": "Ticket Deleted"})
+    return jsonify({"error": "Invalid token"})
+
+@app.route('/closeTicket', methods=['POST'])
+def closeTicketByID():
+    from models import Tickets
+    data = request.get_json()
+
+    if verify_token(data['token']):
+        ticket = Tickets.query.get(data['id'])
+        ticket.ticket_status = 'Closed'
+        db.session.commit()
+        return jsonify({"Success": "Ticket Closed"})
     return jsonify({"error": "Invalid token"})
