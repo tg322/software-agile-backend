@@ -1,11 +1,8 @@
 from app import app, db
 from flask import jsonify, request
 
-class ticket_category(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    category = db.Column(db.String(100))
-
 def get_all_categories():
+    from models import ticket_category
     categories = ticket_category.query.all()
 
     all_categories = []

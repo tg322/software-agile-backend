@@ -3,18 +3,10 @@ from flask import jsonify, request
 import bcrypt
 from authentication import *
 
-# Database Models ----------------------------------------------------------------------------------
-class users(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    Email = db.Column(db.String(100))
-    PassHash = db.Column(db.String(250))
-    Role = db.Column(db.Integer)
-
-# --------------------------------------------------------------------------------------------------
-
 
 # Create User Method---------------------------------------------------------------------------------
 def create_user(Email, PassHash, Role):
+    from models import users
     new_user = users(Email=Email, PassHash=PassHash, Role=Role)
     db.session.add(new_user)
     db.session.commit()
@@ -33,6 +25,8 @@ def create_user():
 
 
 def get_user_by_email(email):
+    from models import users
+
     user = users.query.filter_by(Email=email).first()
     if user:
         return{

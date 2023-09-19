@@ -5,11 +5,9 @@ import os
 from jwcrypto import jwe, jwk
 from app import app, db
 
-class encryption_key(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    encrypt_key = db.Column(db.String(250))
 
 def get_key():
+    from models import encryption_key
     key_data = encryption_key.query.first()
     if key_data:
         return key_data.encrypt_key
@@ -90,7 +88,7 @@ def verify_token(token_str):
     # Extract the 'exp' timestamp and compare it to the current time
     exp_timestamp = decrypted_payload.get('exp', None)
     if exp_timestamp is None:
-        return True
+        return False
     
-    return datetime.datetime.utcnow().timestamp() > exp_timestamp
+    return datetime.datetime.utcnow().timestamp() <= exp_timestamp
 
