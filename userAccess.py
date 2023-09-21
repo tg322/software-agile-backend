@@ -5,21 +5,20 @@ from authentication import *
 
 
 # Create User Method---------------------------------------------------------------------------------
-def create_user(Email, PassHash, Role):
+def insert_user(Email, PassHash, Role, fName, Lname):
     from models import users
-    new_user = users(Email=Email, PassHash=PassHash, Role=Role)
+    new_user = users(first_name=fName, last_name=Lname, Email=Email, PassHash=PassHash, Role=Role)
     db.session.add(new_user)
     db.session.commit()
     return jsonify({'Email': new_user.Email, 'PassHash': new_user.PassHash, 'Role': new_user.Role})
 
 # Create User route
-@app.route('/users', methods=['POST'])
+@app.route('/createUser', methods=['POST'])
 def create_user():
     data = request.get_json()
-    data['password']
-    
-    hash = bcrypt.hashpw(b'testAdmin', bcrypt.gensalt())
-    response = create_user(data['email'], hash, data['role'])
+    password = data['password'].encode('utf-8')
+    hash = bcrypt.hashpw(password, bcrypt.gensalt())
+    response = insert_user(data['userEmail'], hash, data['userRole'], data['fName'], data['lName'])
     return response
 # ---------------------------------------------------------------------------------------------------
 
@@ -54,9 +53,15 @@ def runLogin():
         
         if check_password(data['password'], pass_hash):
             token = create_token(user_data)
-            return jsonify(token)
+            permissionLevel = checkIfAdmin(user_data['Role'])
+            response = {
+                'token': token,
+                'permissionLevel': permissionLevel
+            }
+
+            return jsonify(response)
         else:
-            return jsonify({'message': 'failed'})
+            return jsonify({'message': 'failed'}), 404
     else:
         return jsonify({'message': 'User not found'}), 404
     
@@ -65,7 +70,10 @@ def runLogin():
 def runVerify():
     data = request.get_json()
     print(data['token'])
-    tokenIsActive = verify_token(data['token'])
+    tokenValidation = verify_token(data['token'])
+    if tokenValidation['tokenIsValid']:
+        return jsonify(tokenValidation)
 
-    return jsonify(tokenIsActive)
+
+    return jsonify({'message': 'Token Error'}), 404
         

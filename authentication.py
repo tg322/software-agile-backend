@@ -55,6 +55,7 @@ def create_token(user_data):
     payload = {
         'user_id': user_data['id'],
         'email': user_data['Email'],
+        'permissionLevel': user_data['Role'],
         'exp': datetime.datetime.utcnow().timestamp() + 24 * 60 * 60
     }
 
@@ -89,6 +90,27 @@ def verify_token(token_str):
     exp_timestamp = decrypted_payload.get('exp', None)
     if exp_timestamp is None:
         return False
-    
-    return datetime.datetime.utcnow().timestamp() <= exp_timestamp
+    # if datetime.datetime.utcnow().timestamp() <= exp_timestamp:
+    permissionLevel = decrypted_payload.get('permissionLevel', None)
+    if permissionLevel is None:
+        return False
+    isAdmin = checkIfAdmin(permissionLevel)
 
+    tokenIsValid = datetime.datetime.utcnow().timestamp() <= exp_timestamp
+
+    response = {
+        'permissionLevel': isAdmin,
+        'tokenIsValid': tokenIsValid
+    }
+
+    return response
+
+
+def checkIfAdmin(roleID):
+    from models import roles
+    role = roles.query.filter_by(id=roleID).first()
+
+    if role.role_name == 'Admin':
+        return True
+    
+    return False

@@ -26,3 +26,7 @@ class Tickets(db.Model):
 class encryption_key(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     encrypt_key = db.Column(db.String(250))
+
+class roles(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    role_name = db.Column(db.String(50))

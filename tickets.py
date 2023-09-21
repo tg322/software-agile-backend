@@ -171,3 +171,6 @@ def closeTicketByID():
         db.session.commit()
         return jsonify({"Success": "Ticket Closed"})
     return jsonify({"error": "Invalid token"})
+
+
+
